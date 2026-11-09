@@ -1,0 +1,1 @@
+{"dependencies":{"near-api-js":"^5.1.1"},"description":"Agent sandbox demo KeyGuard: scoped key mencoba method diizinkan (sukses) dan terlarang (ditolak protokol).","name":"keyguard-agent-sandbox","private":true,"scripts":{"demo":"node demo.mjs"},"type":"module","version":"0.1.0"}
