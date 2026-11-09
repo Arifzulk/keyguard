@@ -32,6 +32,7 @@
     "@near-wallet-selector/core": "10.1.4",
     "@near-wallet-selector/modal-ui": "10.1.4",
     "@near-wallet-selector/my-near-wallet": "10.1.4",
+    "buffer": "^6.0.3",
     "qrcode": "1.5.4"
   }
 }
