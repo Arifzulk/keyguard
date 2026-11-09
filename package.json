@@ -1,0 +1,37 @@
+{
+  "name": "vite-scaffold",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write \"src/**/*.{ts,css}\" \"*.{ts,html,md}\" \"contract/src/*.ts\" \"agent-sandbox/*.mjs\"",
+    "format:check": "prettier --check \"src/**/*.{ts,css}\" \"*.{ts,html,md}\" \"contract/src/*.ts\" \"agent-sandbox/*.mjs\""
+  },
+  "devDependencies": {
+    "@types/qrcode": "1.5.6",
+    "esbuild": "^0.28.2",
+    "jsdom": "^31.0.0",
+    "prettier": "^3.9.10",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "@near-js/accounts": "2.5.1",
+    "@near-js/crypto": "2.5.1",
+    "@near-js/keystores": "2.5.1",
+    "@near-js/providers": "2.5.1",
+    "@near-js/signers": "2.5.1",
+    "@near-js/transactions": "2.5.1",
+    "@near-js/utils": "2.5.1",
+    "@near-wallet-selector/core": "10.1.4",
+    "@near-wallet-selector/modal-ui": "10.1.4",
+    "@near-wallet-selector/my-near-wallet": "10.1.4",
+    "qrcode": "1.5.4"
+  }
+}
