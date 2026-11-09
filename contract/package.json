@@ -1,0 +1,18 @@
+{
+  "name": "contract",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "near-sdk-js build src/contract.ts build/contract.wasm",
+    "build:abi": "near-sdk-js build src/contract.ts build/contract.wasm --generateABI"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "16.18.126",
+    "near-sdk-js": "2.0.0"
+  },
+  "type": "module"
+}
