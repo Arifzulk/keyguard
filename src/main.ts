@@ -6,6 +6,10 @@
  *   #/keys         → Kelola key + revoke
  */
 import "./style.css";
+// @near-js/* needs Buffer in the browser (signing/serialization). The
+// `buffer` package polyfills it; expose it globally before anything runs.
+import { Buffer } from "buffer";
+(window as unknown as { Buffer: typeof Buffer }).Buffer = Buffer;
 import { renderBuilder } from "./pages/builder";
 import { renderKeySession } from "./pages/keySession";
 import { renderSandbox } from "./pages/sandbox";
