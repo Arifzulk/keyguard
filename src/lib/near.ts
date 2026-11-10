@@ -1,6 +1,6 @@
 /**
- * Koneksi wallet via NEAR Wallet Selector (testnet, MyNearWallet)
- * + provider RPC bersama.
+ * Wallet connection via NEAR Wallet Selector (testnet, MyNearWallet)
+ * + shared RPC provider.
  */
 import { setupWalletSelector, type WalletSelector } from "@near-wallet-selector/core";
 import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
@@ -31,7 +31,7 @@ export async function getModal(): Promise<WalletSelectorModal> {
   return modal;
 }
 
-/** Account ID yang sedang terhubung, atau null. */
+/** The currently connected account ID, or null. */
 export async function getConnectedAccountId(): Promise<string | null> {
   const s = await getSelector();
   const state = s.store.getState();
@@ -40,7 +40,7 @@ export async function getConnectedAccountId(): Promise<string | null> {
   return accounts[0].accountId;
 }
 
-/** Wallet aktif (full-access session) untuk sign transaksi. */
+/** Active wallet (full-access session) for signing transactions. */
 export async function getActiveWallet() {
   const s = await getSelector();
   const wallet = await s.wallet();
