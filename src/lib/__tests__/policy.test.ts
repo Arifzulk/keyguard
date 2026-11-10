@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 /**
- * Unit tests untuk src/lib/policy.ts — validasi policy + share payload.
- * Menjalankan di jsdom karena encode/decode memakai btoa/atob dan
- * buildShareLink / payloadFromLocation memakai window.location.
+ * Unit tests for src/lib/policy.ts — policy validation + share payload.
+ * Runs in jsdom because encode/decode use btoa/atob and
+ * buildShareLink / payloadFromLocation use window.location.
  */
 import { describe, it, expect, beforeEach } from "vitest";
 import { KeyPair } from "@near-js/crypto";
@@ -36,18 +36,18 @@ function makePayload(overrides: Partial<SharePayload> = {}): SharePayload {
 }
 
 describe("isValidAccountId", () => {
-  it("menerima account ID valid (named + subaccount)", () => {
+  it("accepts a valid account ID (named + subaccount)", () => {
     expect(isValidAccountId("alice.testnet")).toBe(true);
     expect(isValidAccountId("keyguard-demo.testnet")).toBe(true);
     expect(isValidAccountId("a-b_c.testnet")).toBe(true);
     expect(isValidAccountId("zvlk.near")).toBe(true);
   });
 
-  it("menerima implicit account (64 hex)", () => {
+  it("accepts an implicit account (64 hex)", () => {
     expect(isValidAccountId("a".repeat(64))).toBe(true);
   });
 
-  it("menolak format invalid", () => {
+  it("rejects an invalid format", () => {
     expect(isValidAccountId("")).toBe(false);
     expect(isValidAccountId("a")).toBe(false); // min 2 char
     expect(isValidAccountId("A".repeat(65))).toBe(false); // max 64 + uppercase
@@ -59,19 +59,19 @@ describe("isValidAccountId", () => {
     expect(isValidAccountId("alice@testnet")).toBe(false);
   });
 
-  it("mentolerir spasi di ujung (trim)", () => {
+  it("tolerates trailing spaces (trim)", () => {
     expect(isValidAccountId("  alice.testnet  ")).toBe(true);
   });
 });
 
 describe("isValidMethodName", () => {
-  it("menerima nama method valid", () => {
+  it("accepts a valid method name", () => {
     expect(isValidMethodName("increment")).toBe(true);
     expect(isValidMethodName("get_count")).toBe(true);
     expect(isValidMethodName("method123")).toBe(true);
   });
 
-  it("menolak nama method invalid", () => {
+  it("rejects an invalid method name", () => {
     expect(isValidMethodName("")).toBe(false);
     expect(isValidMethodName("with-dash")).toBe(false);
     expect(isValidMethodName("with space")).toBe(false);
@@ -82,13 +82,13 @@ describe("isValidMethodName", () => {
 });
 
 describe("isPositiveNumber", () => {
-  it("menerima angka positif", () => {
+  it("accepts a positive number", () => {
     expect(isPositiveNumber("0.25")).toBe(true);
     expect(isPositiveNumber("1")).toBe(true);
     expect(isPositiveNumber("1e-9")).toBe(true);
   });
 
-  it("menolak nol / negatif / bukan angka", () => {
+  it("rejects zero / negative / non-number", () => {
     expect(isPositiveNumber("0")).toBe(false);
     expect(isPositiveNumber("-1")).toBe(false);
     expect(isPositiveNumber("")).toBe(false);
@@ -104,17 +104,17 @@ describe("encode/decode share payload", () => {
     expect(decodeSharePayload(encodeSharePayload(p))).toEqual(p);
   });
 
-  it("round-trip dengan method & receiver unicode-ish tetap stabil", () => {
+  it("round-trip with unicode-ish method & receiver stays stable", () => {
     const p = makePayload({ methodNames: ["stake_v2", "a".repeat(64)] });
     expect(decodeSharePayload(encodeSharePayload(p))).toEqual(p);
   });
 
-  it("menolak base64 rusak", () => {
+  it("rejects broken base64", () => {
     expect(() => decodeSharePayload("!!!not-base64!!!")).toThrow();
     expect(() => decodeSharePayload("")).toThrow();
   });
 
-  it("menolak JSON bukan objek / field hilang", () => {
+  it("rejects non-object JSON / missing fields", () => {
     const b64 = (o: unknown) =>
       btoa(unescape(encodeURIComponent(JSON.stringify(o))))
         .replace(/\+/g, "-")
@@ -126,7 +126,7 @@ describe("encode/decode share payload", () => {
     expect(() => decodeSharePayload(b64("just a string"))).toThrow();
   });
 
-  it("menolak secret bukan ed25519 / bukan base58", () => {
+  it("rejects a non-ed25519 / non-base58 secret", () => {
     expect(() =>
       decodeSharePayload(encodeSharePayload(makePayload({ secret: "secp256k1:abc" }))),
     ).toThrow();
@@ -138,7 +138,7 @@ describe("encode/decode share payload", () => {
     ).toThrow();
   });
 
-  it("menolak accountId / receiverId invalid", () => {
+  it("rejects an invalid accountId / receiverId", () => {
     expect(() =>
       decodeSharePayload(encodeSharePayload(makePayload({ accountId: "Alice.testnet" }))),
     ).toThrow();
@@ -148,13 +148,13 @@ describe("encode/decode share payload", () => {
     ).toThrow();
   });
 
-  it("MENOLAK methodNames kosong — list kosong = semua method di protokol", () => {
+  it("REJECTS empty methodNames — an empty list means all methods in the protocol", () => {
     expect(() =>
       decodeSharePayload(encodeSharePayload(makePayload({ methodNames: [] }))),
     ).toThrow();
   });
 
-  it("MENOLAK method name hasil rekayasa (XSS / karakter ilegal)", () => {
+  it("REJECTS a crafted method name (XSS / illegal characters)", () => {
     const evil = "<img src=x onerror=alert(1)>";
     expect(() =>
       decodeSharePayload(encodeSharePayload(makePayload({ methodNames: [evil] }))),
@@ -167,7 +167,7 @@ describe("encode/decode share payload", () => {
     ).toThrow();
   });
 
-  it("membuang duplikat method, mempertahankan urutan", () => {
+  it("drops duplicate methods, keeps the order", () => {
     const p = makePayload({ methodNames: ["deposit", "increment", "deposit"] });
     const out = decodeSharePayload(encodeSharePayload(p));
     expect(out.methodNames).toEqual(["deposit", "increment"]);
@@ -176,43 +176,43 @@ describe("encode/decode share payload", () => {
 
 describe("buildShareLink / payloadFromLocation", () => {
   beforeEach(() => {
-    // jsdom: reset ke path root di origin yang sama (replaceState lintas
-    // origin — mis. ganti port — ditolak SecurityError).
+    // jsdom: reset to the root path on the same origin (cross-origin
+    // replaceState — e.g. changing port — is rejected with SecurityError).
     window.history.replaceState(null, "", "/");
   });
 
-  it("link menaruh secret HANYA di fragment — tidak pernah di query string", () => {
+  it("the link puts the secret ONLY in the fragment — never in the query string", () => {
     const p = makePayload();
     const link = buildShareLink(p);
     const url = new URL(link);
     expect(url.search).toBe("");
     expect(url.hash).toContain("#/key-session#");
     expect(url.hash).toContain(encodeSharePayload(p));
-    // Secret tidak bocor ke bagian URL lain.
+    // The secret does not leak into other parts of the URL.
     expect(link.split("#")[0]).not.toContain("ed25519");
   });
 
-  it("payloadFromLocation membaca kembali payload dari hash", () => {
+  it("payloadFromLocation reads the payload back from the hash", () => {
     const p = makePayload();
     window.location.hash = `#/key-session#${encodeSharePayload(p)}`;
     expect(payloadFromLocation()).toEqual(p);
   });
 
-  it("payloadFromLocation mengembalikan null bila tidak ada payload", () => {
+  it("payloadFromLocation returns null when there is no payload", () => {
     window.location.hash = "#/key-session";
     expect(payloadFromLocation()).toBeNull();
     window.location.hash = "#/";
     expect(payloadFromLocation()).toBeNull();
   });
 
-  it("payloadFromLocation mengembalikan null untuk payload rusak (bukan throw)", () => {
+  it("payloadFromLocation returns null for a broken payload (not a throw)", () => {
     window.location.hash = "#/key-session#<img src=x onerror=alert(1)>";
     expect(payloadFromLocation()).toBeNull();
   });
 });
 
 describe("policySummary", () => {
-  it("menyebut method, kontrak, dan allowance", () => {
+  it("mentions the method, contract, and allowance", () => {
     const s = policySummary({
       receiverId: "vault.alice.testnet",
       methodNames: ["deposit", "increment"],
@@ -226,7 +226,7 @@ describe("policySummary", () => {
 });
 
 describe("agent config / usage example", () => {
-  it("buildAgentConfig memuat field yang dibutuhkan near-api-js", () => {
+  it("buildAgentConfig carries the fields near-api-js needs", () => {
     const p = makePayload();
     const cfg = buildAgentConfig(p);
     expect(cfg.networkId).toBe("testnet");
@@ -237,17 +237,17 @@ describe("agent config / usage example", () => {
     expect(JSON.parse(agentConfigJson(p))).toEqual(cfg);
   });
 
-  it("agentUsageExample memakai pesan error protokol yang terobservasi", () => {
+  it("agentUsageExample uses the observed protocol error message", () => {
     const ex = agentUsageExample(makePayload());
     expect(ex).toContain("Transaction method name <method> isn't allowed by the access key");
     expect(ex).toContain("KeyPair.fromString");
-    // Contoh memakai method pertama dari policy sebagai contoh allowed.
+    // Example uses the policy's first method as the allowed example.
     expect(ex).toContain('"deposit"');
   });
 });
 
 describe("preset demo", () => {
-  it("preset method demo konsisten", () => {
+  it("demo method presets are consistent", () => {
     expect(DEMO_METHODS).toContain("deposit");
     expect(DEMO_METHODS).toContain("withdraw");
     for (const m of DEMO_ALLOWED_DEFAULTS) {
