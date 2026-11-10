@@ -1,6 +1,6 @@
 /**
- * Halaman Kelola Key (#/keys): daftar access key + revoke (deleteKey).
- * Juga dipakai builder.ts untuk revoke key yang baru dibuat.
+ * Manage Keys page (#/keys): access key list + revoke (deleteKey).
+ * Also used by builder.ts to revoke a freshly created key.
  */
 import { PublicKey } from "@near-js/crypto";
 import { Action, DeleteKey } from "@near-js/transactions";
@@ -16,7 +16,7 @@ export interface KeyInfo {
   allowance?: string;
 }
 
-/** Revoke key via deleteKey, ditandatangani sesi full-access wallet. */
+/** Revoke a key via deleteKey, signed by the full-access wallet session. */
 export async function deleteKey(accountId: string, publicKeyStr: string): Promise<string> {
   const wallet = await getActiveWallet();
   const outcome = await wallet.signAndSendTransaction({
@@ -115,8 +115,8 @@ export async function renderKeys(root: HTMLElement): Promise<void> {
         pub.className = "mono key-pub";
         pub.textContent = k.publicKey;
         item.appendChild(pub);
-        // Detail dirender via textContent: nilai datang dari RPC on-chain
-        // (data tidak tepercaya) — jangan diinterpolasi ke innerHTML.
+        // Details are rendered via textContent: values come from on-chain RPC
+        // (untrusted data) — never interpolate them into innerHTML.
         const detail = document.createElement("div");
         detail.className = "key-detail";
         if (k.permission === "full") {
