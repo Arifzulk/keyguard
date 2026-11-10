@@ -1,10 +1,11 @@
 # KeyGuard — Agent Sandbox (Node)
 
-Skrip demo untuk AI agent: memegang **scoped key** dari link share KeyGuard,
-mencoba method yang **diizinkan** (harus berhasil) dan yang **terlarang**
-(harus ditolak protokol). Hasil tercetak berdampingan — momen demo utama KeyGuard.
+Demo script for an AI agent: it holds a **scoped key** from a KeyGuard share link,
+tries an **allowed** method (must succeed) and a **forbidden** one
+(must be rejected by the protocol). The results print side by side — KeyGuard's
+main demo moment.
 
-## Install & jalan
+## Install & run
 
 ```bash
 cd agent-sandbox
@@ -12,18 +13,18 @@ npm install
 node demo.mjs --link "https://keyguard.pages.dev/#/key-session#<payload>"
 ```
 
-Opsi:
+Options:
 
-| Flag | Arti |
+| Flag | Meaning |
 |---|---|
-| `--link` | Link share KeyGuard (payload di fragment) — secret, akun, kontrak, method diambil dari sini |
-| `--account`, `--secret`, `--contract`, `--allowed` | Mode manual (tanpa link) |
-| `--forbidden` | Method terlarang yang dicoba (default: `withdraw`) |
-| `--allowed-args` | Args JSON untuk panggilan diizinkan (default: `{}`) |
-| `--deposit-near` | Deposit NEAR untuk panggilan diizinkan (default: `0`) |
+| `--link` | KeyGuard share link (payload in the fragment) — secret, account, contract, and methods are taken from it |
+| `--account`, `--secret`, `--contract`, `--allowed` | Manual mode (no link) |
+| `--forbidden` | Forbidden method to try (default: `withdraw`) |
+| `--allowed-args` | JSON args for the allowed call (default: `{}`) |
+| `--deposit-near` | NEAR deposit for the allowed call (default: `0`) |
 
-Secret sebaiknya tidak dilewatkan lewat `--secret` (terlihat di `ps` dan
-shell history). Gunakan env var sebagai gantinya:
+The secret should not be passed via `--secret` (visible in `ps` and
+shell history). Use an env var instead:
 
 ```bash
 KEYGUARD_LINK="https://keyguard.pages.dev/#/key-session#<payload>" node demo.mjs
@@ -31,43 +32,43 @@ KEYGUARD_SECRET=ed25519:... node demo.mjs --account alice.testnet \
   --contract vault.alice.testnet --allowed increment --forbidden withdraw
 ```
 
-## Contoh output
+## Example output
 
 ```
 ================================================================
 🛡️  KeyGuard — Agent Sandbox
 ================================================================
-Akun pemilik : alice.testnet
+Owner        : alice.testnet
 Public key   : ed25519:AbC...
-Kontrak      : vault.alice.testnet
-Method boleh : deposit, increment
+Contract     : vault.alice.testnet
+Methods      : deposit, increment
 
-1️⃣  METHOD DIIZINKAN: increment @ vault.alice.testnet
-   ✅ BERHASIL (812 ms)
+1️⃣  ALLOWED METHOD: increment @ vault.alice.testnet
+   ✅ SUCCEEDED (812 ms)
    tx: 7fK...
    explorer: https://testnet.nearblocks.io/txns/7fK...
 
-2️⃣  METHOD TERLARANG: withdraw @ vault.alice.testnet
-   ⛔ DITOLAK (640 ms)
-   error protokol (apa adanya):
+2️⃣  FORBIDDEN METHOD: withdraw @ vault.alice.testnet
+   ⛔ REJECTED (640 ms)
+   protocol error (verbatim):
    | Transaction method name withdraw isn't allowed by the access key
 
 ================================================================
-RINGKASAN
+SUMMARY
 ================================================================
-✅ Method diizinkan BERHASIL — scoped key berfungsi untuk agent.
-✅ Method terlarang DITOLAK protokol — batas key terbukti di level protokol.
+✅ Allowed method SUCCEEDED — scoped key works for the agent.
+✅ Forbidden method REJECTED by the protocol — key limits proven at the protocol level.
 
-🎬 Demo sandbox SUKSES.
+🎬 Sandbox demo SUCCEEDED.
 ```
 
-Exit code: `0` bila demo sesuai ekspektasi (allowed OK + forbidden ditolak),
-`2` bila tidak, `1` bila argumen/error fatal.
+Exit code: `0` when the demo matches expectations (allowed OK + forbidden rejected),
+`2` when it does not, `1` for bad arguments / fatal errors.
 
-## Keamanan
+## Security
 
-- Script ini **HANYA untuk scoped (function-call) key**. Jangan jalankan dengan
+- This script is **ONLY for scoped (function-call) keys**. Do not run it with a
   full-access key.
-- Secret tidak disimpan ke disk — hanya di memori proses (InMemoryKeyStore).
-- Untuk demo, pakai tombol **"Copy for agent"** di kartu share KeyGuard
-  (config JSON siap-tempel) atau `--link` langsung dari QR/link share.
+- The secret is never written to disk — only kept in process memory (InMemoryKeyStore).
+- For the demo, use the **"Copy for agent"** button on the KeyGuard share card
+  (paste-ready agent config JSON) or `--link` straight from the QR / share link.
