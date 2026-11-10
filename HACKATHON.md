@@ -62,6 +62,11 @@ delegating to AI agents:
   key for one method (`spend`) on that contract. KeyGuard is the generic
   tool: a builder for _any_ contract and _any_ methods, plus link/QR
   packaging, sandbox proof, and a revoke dashboard.
+- **KeyProof** (SEC track, swept 10 Nov 2026): a read-only _auditor_ — it
+  reads an agent's existing NEAR access keys over RPC and checks them
+  against a plain-English policy. It never _issues_ a key. Complementary
+  to KeyGuard: KeyGuard issues the scoped key, KeyProof audits keys that
+  already exist.
 
 ## What is built
 
