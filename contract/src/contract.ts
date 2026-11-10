@@ -1,10 +1,10 @@
 /**
- * KeyGuard Demo Contract — vault/counter sederhana untuk testnet.
+ * KeyGuard Demo Contract — a simple vault/counter for testnet.
  *
- * Method yang BOLEH dipakai scoped key demo: deposit, increment
- * Method yang DILARANG untuk scoped key demo: withdraw, reset (hanya owner)
+ * Methods the demo scoped key MAY call: deposit, increment
+ * Methods FORBIDDEN to the demo scoped key: withdraw, reset (owner only)
  *
- * Dibangun dengan near-sdk-js 2.0.0. Build: npx near-sdk-js build
+ * Built with near-sdk-js 2.0.0. Build: npx near-sdk-js build
  */
 import { NearBindgen, near, call, view, initialize } from "near-sdk-js";
 
@@ -12,7 +12,7 @@ import { NearBindgen, near, call, view, initialize } from "near-sdk-js";
 class KeyguardDemo {
   owner: string = "";
   count: number = 0;
-  totalDeposited: string = "0"; // yoctoNEAR, disimpan sebagai string
+  totalDeposited: string = "0"; // yoctoNEAR, stored as a string
 
   @initialize({})
   init({ owner }: { owner: string }): void {
@@ -23,9 +23,9 @@ class KeyguardDemo {
     near.log(`KeyGuard demo diinisialisasi. Owner: ${owner}`);
   }
 
-  // ---------- Method yang DIIZINKAN untuk scoped key demo ----------
+  // ---------- Methods ALLOWED for the demo scoped key ----------
 
-  /** Terima deposit NEAR (payable). */
+  /** Accept a NEAR deposit (payable). */
   @call({ payableFunction: true })
   deposit(): void {
     const amount = near.attachedDeposit();
@@ -34,26 +34,26 @@ class KeyguardDemo {
     near.log(`Deposit ${amount.toString()} yocto dari ${near.predecessorAccountId()}`);
   }
 
-  /** Naikkan counter. */
+  /** Increase the counter. */
   @call({})
   increment(): void {
     this.count += 1;
     near.log(`Counter: ${this.count}`);
   }
 
-  /** Baca counter (view). */
+  /** Read the counter (view). */
   @view({})
   get_count(): number {
     return this.count;
   }
 
-  /** Baca total deposit (view). */
+  /** Read the total deposit (view). */
   @view({})
   get_total_deposited(): string {
     return this.totalDeposited;
   }
 
-  // ---------- Method TERLARANG untuk scoped key demo (owner only) ----------
+  // ---------- Methods FORBIDDEN for the demo scoped key (owner only) ----------
 
   private assertOwner(): void {
     if (near.predecessorAccountId() !== this.owner) {
@@ -61,7 +61,7 @@ class KeyguardDemo {
     }
   }
 
-  /** Tarik dana ke owner. Scoped key demo TIDAK boleh memanggil ini. */
+  /** Withdraw funds to the owner. The demo scoped key must NOT call this. */
   @call({})
   withdraw({ amount }: { amount: string }): void {
     this.assertOwner();
@@ -76,7 +76,7 @@ class KeyguardDemo {
     near.log(`Withdraw ${amount} yocto ke ${this.owner}`);
   }
 
-  /** Reset counter & deposit. Scoped key demo TIDAK boleh memanggil ini. */
+  /** Reset the counter & deposit. The demo scoped key must NOT call this. */
   @call({})
   reset(): void {
     this.assertOwner();
