@@ -1,4 +1,4 @@
-/* KeyGuard — CSS murni, tanpa framework UI. */
+/* KeyGuard — plain CSS, no UI framework. */
 :root {
   --bg: #0f1420;
   --bg-card: #171e2e;
@@ -395,7 +395,7 @@ label > span,
   white-space: pre-wrap;
 }
 
-/* Penjelasan BISA / TIDAK BISA di Key-Session */
+/* CAN / CANNOT explanation on the Key-Session page */
 .cando-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
