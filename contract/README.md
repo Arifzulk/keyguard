@@ -1,51 +1,51 @@
-# Kontrak Demo KeyGuard
+# KeyGuard Demo Contract
 
-Vault/counter sederhana untuk NEAR testnet — target sandbox demo KeyGuard.
+A simple vault/counter for NEAR testnet — the target of the KeyGuard sandbox demo.
 
-| Method | Jenis | Keterangan |
+| Method | Type | Notes |
 |---|---|---|
-| `init({owner})` | init | Sekali saja, set owner |
-| `deposit()` | call, payable | Terima deposit NEAR — **boleh** untuk scoped key demo |
-| `increment()` | call | Naikkan counter — **boleh** untuk scoped key demo |
-| `get_count()` | view | Baca counter |
-| `get_total_deposited()` | view | Baca total deposit (yocto) |
-| `withdraw({amount})` | call | Tarik dana — **hanya owner**, scoped key demo DITOLAK |
-| `reset()` | call | Reset state — **hanya owner**, scoped key demo DITOLAK |
+| `init({owner})` | init | Once only, sets the owner |
+| `deposit()` | call, payable | Accept a NEAR deposit — **allowed** for the demo scoped key |
+| `increment()` | call | Increase the counter — **allowed** for the demo scoped key |
+| `get_count()` | view | Read the counter |
+| `get_total_deposited()` | view | Read the total deposit (yocto) |
+| `withdraw({amount})` | call | Withdraw funds — **owner only**, demo scoped key REJECTED |
+| `reset()` | call | Reset state — **owner only**, demo scoped key REJECTED |
 
 ## Build
 
 ```bash
 cd contract
-npm install   # lihat "Catatan toolchain" bila postinstall gagal
+npm install   # see "Toolchain notes" if postinstall fails
 ./build.sh    # -> build/contract.wasm
 ```
 
-## Deploy ke testnet
+## Deploy to testnet
 
-Butuh: [near CLI](https://docs.near.org/tools/near-cli) + akun `.testnet`
-berisi saldo dari faucet https://near-faucet.io.
+Needs: [near CLI](https://docs.near.org/tools/near-cli) + a `.testnet` account
+funded from the faucet https://near-faucet.io.
 
 ```bash
 cd contract
-ACCOUNT_ID=akunanda.testnet ./deploy.sh
+ACCOUNT_ID=youraccount.testnet ./deploy.sh
 ```
 
-Setelah deploy, isi `DEMO_CONTRACT_ID` di `../src/config.ts` dengan account ID
-kontrak agar UI Builder menampilkan tombol "Pakai kontrak demo".
+After deploying, set `DEMO_CONTRACT_ID` in `../src/config.ts` to the contract's
+account ID so the Builder UI shows the "Use demo contract" button.
 
-## Catatan toolchain
+## Toolchain notes
 
-`near-sdk-js@2.0.0` mengunduh binaryen + QuickJS + wasi-sdk dari GitHub saat
-`npm install` (postinstall). Bila postinstall gagal (mis. `tar` gagal karena
-aturan ownership di container), unduh & ekstrak manual ke
+`near-sdk-js@2.0.0` downloads binaryen + QuickJS + wasi-sdk from GitHub during
+`npm install` (postinstall). If postinstall fails (e.g. `tar` fails because of
+ownership rules in a container), download & extract them manually into
 `node_modules/near-sdk-js/lib/cli/deps/`:
 
-- `binaryen/` — dari https://github.com/ailisp/binaryen/releases (tag v0.1.16)
-- `qjsc` (binary, chmod +x) — dari https://github.com/near/quickjs/releases (tag v0.1.3)
+- `binaryen/` — from https://github.com/ailisp/binaryen/releases (tag v0.1.16)
+- `qjsc` (binary, chmod +x) — from https://github.com/near/quickjs/releases (tag v0.1.3)
 - `quickjs/` — source tag v0.1.3
-- `wasi-sdk/` — dari https://github.com/WebAssembly/wasi-sdk/releases (wasi-sdk-11)
+- `wasi-sdk/` — from https://github.com/WebAssembly/wasi-sdk/releases (wasi-sdk-11)
 
-Gunakan `tar --no-same-owner -xf ...` bila ekstraksi gagal karena ownership.
+Use `tar --no-same-owner -xf ...` if extraction fails because of ownership.
 
-Selain itu, `@types/node` di-pin ke `16.18.126`: tsc bawaan near-sdk-js
-(TypeScript 4.7) tidak bisa mem-parse `@types/node` versi baru.
+Also, `@types/node` is pinned to `16.18.126`: the tsc bundled with near-sdk-js
+(TypeScript 4.7) cannot parse newer `@types/node` versions.
