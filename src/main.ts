@@ -1,9 +1,9 @@
 /**
- * KeyGuard — entry point. Hash router sederhana (static-hosting friendly):
+ * KeyGuard — entry point. Simple hash router (static-hosting friendly):
  *   #/             → Builder
- *   #/key-session  → Key-Session (payload di fragment: #/key-session#<base64url>)
+ *   #/key-session  → Key-Session (payload in the fragment: #/key-session#<base64url>)
  *   #/sandbox      → Sandbox allowed-vs-rejected
- *   #/keys         → Kelola key + revoke
+ *   #/keys         → Manage keys + revoke
  */
 import "./style.css";
 // @near-js/* needs Buffer in the browser (signing/serialization). The
