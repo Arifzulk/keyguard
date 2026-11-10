@@ -2,11 +2,11 @@ import { defineConfig, type Plugin } from "vitest/config";
 import { transform as esbuildTransform } from "esbuild";
 
 /**
- * Vitest 5 / Vite 8 memakai oxc untuk transform, dan oxc TIDAK menurunkan
- * legacy decorator — ia membiarkan `@NearBindgen` apa adanya sehingga Node
- * gagal parse ("Invalid or unexpected token"). Hanya contract/src yang
- * memakai decorator (near-sdk-js), jadi satu file itu saja yang
- * ditransform dengan esbuild + experimentalDecorators.
+ * Vitest 5 / Vite 8 uses oxc for transforms, and oxc does NOT lower
+ * legacy decorators — it leaves `@NearBindgen` as-is, so Node fails to
+ * parse it ("Invalid or unexpected token"). Only contract/src uses
+ * decorators (near-sdk-js), so only that one file is transformed
+ * with esbuild + experimentalDecorators.
  */
 function legacyDecoratorsPlugin(): Plugin {
   return {
