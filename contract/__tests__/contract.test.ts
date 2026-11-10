@@ -1,11 +1,11 @@
 /**
- * Unit tests untuk contract/src/contract.ts — logika vault/counter demo.
+ * Unit tests for contract/src/contract.ts — demo vault/counter logic.
  *
- * near-sdk-js di-mock: decorator jadi no-op, objek `near` diganti stub yang
- * perilakunya dikendalikan test (attachedDeposit, predecessorAccountId,
- * promiseBatch*). Yang diuji adalah LOGIKA KONTRAK (guard owner, akuntansi
- * deposit/withdraw, reset) — bukan runtime WASM. Perilaku on-chain yang
- * sebenarnya dibuktikan oleh e2e testnet (lihat README).
+ * near-sdk-js is mocked: decorators become no-ops, the `near` object is
+ * replaced with a stub whose behavior the tests control (attachedDeposit,
+ * predecessorAccountId, promiseBatch*). What is tested is the CONTRACT
+ * LOGIC (owner guard, deposit/withdraw accounting, reset) — not the WASM
+ * runtime. Real on-chain behavior is proven by the testnet e2e (see README).
  */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
@@ -55,8 +55,8 @@ vi.mock("near-sdk-js", () => {
   };
 });
 
-// Import untuk efek samping: decorator @NearBindgen menangkap class.
-// @ts-expect-error — modul ter-mock, export __state/__captured hanya ada di mock.
+// Import for side effects: the @NearBindgen decorator captures the class.
+// @ts-expect-error — mocked module; the __state/__captured exports only exist in the mock.
 import { __state, __captured } from "near-sdk-js";
 import "../src/contract";
 
@@ -87,14 +87,14 @@ function resetFake(s: FakeState) {
 describe("init", () => {
   beforeEach(() => resetFake(__state as FakeState));
 
-  it("init pertama menetapkan owner", () => {
+  it("first init sets the owner", () => {
     const c = freshContract();
     c.init({ owner: "owner.testnet" });
     c.increment();
     expect(c.get_count()).toBe(1);
   });
 
-  it("init kedua ditolak", () => {
+  it("second init is rejected", () => {
     const c = freshContract();
     c.init({ owner: "owner.testnet" });
     expect(() => c.init({ owner: "attacker.testnet" })).toThrow(
@@ -106,7 +106,7 @@ describe("init", () => {
 describe("increment / get_count", () => {
   beforeEach(() => resetFake(__state as FakeState));
 
-  it("counter mulai 0 dan naik per increment", () => {
+  it("counter starts at 0 and rises per increment", () => {
     const c = freshContract();
     expect(c.get_count()).toBe(0);
     c.increment();
@@ -118,7 +118,7 @@ describe("increment / get_count", () => {
 describe("deposit", () => {
   beforeEach(() => resetFake(__state as FakeState));
 
-  it("menambah totalDeposited sebesar attachedDeposit (BigInt, string)", () => {
+  it("adds attachedDeposit to totalDeposited (BigInt, string)", () => {
     const c = freshContract();
     const s = __state as FakeState;
     s.attachedDeposit = 1_000_000_000_000_000_000_000_000n; // 1 NEAR
@@ -128,7 +128,7 @@ describe("deposit", () => {
     expect(c.get_total_deposited()).toBe("1500000000000000000000000");
   });
 
-  it("deposit 0 tidak mengubah total", () => {
+  it("a deposit of 0 does not change the total", () => {
     const c = freshContract();
     const s = __state as FakeState;
     s.attachedDeposit = 0n;
@@ -149,7 +149,7 @@ describe("withdraw (owner-only)", () => {
     return { c, s };
   }
 
-  it("bukan owner DITOLAK dan total tidak berubah", () => {
+  it("a non-owner is REJECTED and the total is unchanged", () => {
     const { c, s } = funded();
     s.predecessor = "attacker.testnet";
     expect(() => c.withdraw({ amount: "100" })).toThrow("Hanya owner");
@@ -157,7 +157,7 @@ describe("withdraw (owner-only)", () => {
     expect(s.transfers).toHaveLength(0);
   });
 
-  it("owner menarik sebagian: total berkurang, transfer terjadwal ke owner", () => {
+  it("owner withdraws partially: total decreases, transfer scheduled to owner", () => {
     const { c, s } = funded();
     s.predecessor = "owner.testnet";
     c.withdraw({ amount: "400000000000000000000000" });
@@ -167,7 +167,7 @@ describe("withdraw (owner-only)", () => {
     expect(s.transfers[0].to).toBe("owner.testnet");
   });
 
-  it("owner tidak bisa menarik melebihi saldo", () => {
+  it("owner cannot withdraw more than the balance", () => {
     const { c, s } = funded();
     s.predecessor = "owner.testnet";
     expect(() => c.withdraw({ amount: "1000000000000000000000001" })).toThrow(
@@ -181,7 +181,7 @@ describe("withdraw (owner-only)", () => {
 describe("reset (owner-only)", () => {
   beforeEach(() => resetFake(__state as FakeState));
 
-  it("bukan owner DITOLAK", () => {
+  it("a non-owner is REJECTED", () => {
     const c = freshContract();
     const s = __state as FakeState;
     c.init({ owner: "owner.testnet" });
@@ -191,7 +191,7 @@ describe("reset (owner-only)", () => {
     expect(c.get_count()).toBe(1);
   });
 
-  it("owner me-reset counter dan total ke 0", () => {
+  it("owner resets the counter and total to 0", () => {
     const c = freshContract();
     const s = __state as FakeState;
     c.init({ owner: "owner.testnet" });
