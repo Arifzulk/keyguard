@@ -1,7 +1,7 @@
 /**
- * Halaman Sandbox (#/sandbox): panggil method diizinkan vs terlarang,
- * berdampingan — momen demo utama KeyGuard.
- * Memakai scoped key dari Key-Session, atau secret yang ditempel manual.
+ * Sandbox page (#/sandbox): call an allowed vs a forbidden method,
+ * side by side — KeyGuard's main demo moment.
+ * Uses the scoped key from Key-Session, or a manually pasted secret.
  */
 import { getScopedSession } from "./keySession";
 import { scopedSessionFromSecret } from "../lib/scoped";
@@ -25,15 +25,15 @@ function parseArgs(text: string): object {
 }
 
 /**
- * Method yang diminta dari route: #/sandbox/method/<method>
- * (dikirim dari tombol per-method di Key-Session). Method name tidak rahasia.
+ * The method requested by the route: #/sandbox/method/<method>
+ * (sent from the per-method buttons in Key-Session). A method name is not secret.
  */
 function methodFromRoute(): string | null {
   const m = window.location.hash.match(/^#\/sandbox\/method\/([^/#?]+)/);
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-/** Format error protokol apa adanya untuk bukti demo. */
+/** Format the protocol error verbatim, as demo evidence. */
 function formatCallError(err: unknown): string {
   if (err instanceof Error) return err.message;
   try {
@@ -52,7 +52,7 @@ export async function renderSandbox(root: HTMLElement): Promise<void> {
     and a <strong>forbidden</strong> one (the protocol rejects it) — side by side.</p>`;
   root.appendChild(wrap);
 
-  // --- Sumber key ---
+  // --- Key source ---
   const keyBox = document.createElement("div");
   keyBox.className = "card";
   keyBox.innerHTML = `<h2>Key source</h2>`;
@@ -111,7 +111,7 @@ export async function renderSandbox(root: HTMLElement): Promise<void> {
     };
   }
 
-  // --- Panel panggil ---
+  // --- Call panels ---
   const panelsWrap = document.createElement("div");
   panelsWrap.className = "sandbox-grid";
   wrap.appendChild(panelsWrap);
@@ -129,7 +129,7 @@ export async function renderSandbox(root: HTMLElement): Promise<void> {
       <label><span>Method</span><input class="c-method" /></label>
       <label><span>Args (JSON)</span><textarea class="c-args" rows="2" placeholder='{}'></textarea></label>
       <label><span>Deposit (NEAR)</span><input class="c-deposit" value="0" /></label>
-      <button class="btn ${kind === "allowed" ? "btn-primary" : "btn-danger"} btn-large">Panggil</button>
+      <button class="btn ${kind === "allowed" ? "btn-primary" : "btn-danger"} btn-large">Call</button>
       <div class="c-out"></div>`;
     panelsWrap.appendChild(root);
     const panel: CallPanel = {
@@ -184,8 +184,8 @@ export async function renderSandbox(root: HTMLElement): Promise<void> {
       } catch (err) {
         const d = document.createElement("div");
         d.className = "call-rejected";
-        // Nama method bisa datang dari route URL (#/sandbox/method/<m>) —
-        // dirender via textContent, bukan innerHTML, agar tidak jadi XSS.
+        // The method name can come from the route URL (#/sandbox/method/<m>) —
+        // render via textContent, not innerHTML, so it cannot become XSS.
         const title = document.createElement("div");
         title.className = "reject-title";
         title.textContent = `✘ ${method} REJECTED`;
@@ -222,7 +222,7 @@ export async function renderSandbox(root: HTMLElement): Promise<void> {
   refreshKeyStatus();
   updatePanels();
 
-  // Bila datang dari link share langsung ke sandbox, coba parse fragment
+  // If arriving from a share link straight into the sandbox, try parsing the fragment
   if (!session) {
     const payload = payloadFromLocation();
     if (payload) {
