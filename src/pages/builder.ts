@@ -1,5 +1,5 @@
 /**
- * Halaman Builder (#/): connect wallet + policy form + addKey + share card.
+ * Builder page (#/): connect wallet + policy form + addKey + share card.
  */
 import { KeyPair } from "@near-js/crypto";
 import {
@@ -266,7 +266,7 @@ export async function renderBuilder(root: HTMLElement): Promise<void> {
     }
     const policy = currentPolicy();
 
-    // ATURAN KERAS: methodNames tidak boleh kosong
+    // HARD RULE: methodNames must not be empty
     if (policy.methodNames.length === 0) {
       methodErr.textContent =
         "Pick at least 1 method. An empty list means ALL methods are allowed in the NEAR protocol — KeyGuard refuses that for safety.";
