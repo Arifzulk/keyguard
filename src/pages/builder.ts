@@ -199,7 +199,9 @@ export async function renderBuilder(root: HTMLElement): Promise<void> {
   const allowLabel = document.createElement("label");
   allowLabel.innerHTML = `<span>Allowance (gas + storage budget, NEAR)</span>
     <p class="hint">The budget this key may spend on gas & storage.
-    Once it is spent, the key stops working — no revoke needed.</p>`;
+    Once it is spent, the key stops working — no revoke needed.
+    There is no expiry date: the key stays valid until the budget runs out
+    or you revoke it, so set the budget as small as the job allows.</p>`;
   const allowRow = document.createElement("div");
   allowRow.className = "allow-row";
   const allowInput = document.createElement("input");
