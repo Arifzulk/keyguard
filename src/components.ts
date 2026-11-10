@@ -1,5 +1,5 @@
 /**
- * Komponen UI bersama: banner error, status transaksi, kartu share (link+QR).
+ * Shared UI components: error banner, transaction status, share card (link+QR).
  */
 import QRCode from "qrcode";
 import { explorerTxUrl } from "./config";
@@ -18,7 +18,7 @@ export function el(tag: string, cls = "", html = ""): HTMLElement {
   return e;
 }
 
-/** Banner error: pesan error protokol ditampilkan apa adanya. */
+/** Error banner: the protocol error message is shown verbatim. */
 export function errorBanner(message: string): HTMLElement {
   const d = el("div", "error-banner");
   d.innerHTML = `<strong>Failed.</strong> <span class="mono"></span>`;
@@ -32,7 +32,7 @@ export function infoBanner(message: string): HTMLElement {
   return d;
 }
 
-/** Kartu status transaksi sukses. */
+/** Successful transaction status card. */
 export function txStatusCard(txHash: string, label = "Transaction sent"): HTMLElement {
   const d = el("div", "tx-card");
   d.innerHTML = `
@@ -44,7 +44,7 @@ export function txStatusCard(txHash: string, label = "Transaction sent"): HTMLEl
   return d;
 }
 
-/** Policy summary bahasa sederhana. */
+/** Plain-language policy summary. */
 export function policySummaryCard(p: Policy): HTMLElement {
   const d = el("div", "policy-card");
   d.innerHTML = `<div class="policy-title">Policy summary</div><p></p>`;
@@ -61,8 +61,8 @@ export interface ShareCardOptions {
 }
 
 /**
- * ShareCard: link share + QR client-side + salin + peringatan keamanan eksplisit.
- * Secret key hanya ada di fragment URL — tidak pernah dikirim ke server.
+ * ShareCard: share link + client-side QR + copy + explicit security warning.
+ * The secret key lives only in the URL fragment — never sent to a server.
  */
 export function shareCard(opts: ShareCardOptions): HTMLElement {
   const d = el("div", "share-card");
