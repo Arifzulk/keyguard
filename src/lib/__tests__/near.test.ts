@@ -1,37 +1,37 @@
 /**
- * Unit tests untuk src/lib/near.ts (bagian murni, tanpa wallet) dan
- * src/config.ts (URL explorer).
+ * Unit tests for src/lib/near.ts (the pure part, no wallet) and
+ * src/config.ts (explorer URLs).
  */
 import { describe, it, expect } from "vitest";
 import { getProvider } from "../near";
 import { explorerTxUrl, explorerAccountUrl, NETWORK_ID, RPC_URL } from "../../config";
 
 describe("getProvider", () => {
-  it("mengembalikan instance yang sama (singleton)", () => {
+  it("returns the same instance (singleton)", () => {
     expect(getProvider()).toBe(getProvider());
   });
 
-  it("menunjuk RPC testnet", () => {
+  it("points at the testnet RPC", () => {
     expect(NETWORK_ID).toBe("testnet");
     expect(RPC_URL).toBe("https://rpc.testnet.near.org");
   });
 });
 
 describe("explorer URLs", () => {
-  it("explorerTxUrl membentuk URL nearblocks yang benar", () => {
+  it("explorerTxUrl builds the correct nearblocks URL", () => {
     const hash = "4hQTWaYfpyzR8T67cFdM58Zah7iHdJqGb4Re7MEDuEH2";
     expect(explorerTxUrl(hash)).toBe(`https://testnet.nearblocks.io/txns/${hash}`);
   });
 
-  it("explorerAccountUrl membentuk URL nearblocks yang benar", () => {
+  it("explorerAccountUrl builds the correct nearblocks URL", () => {
     expect(explorerAccountUrl("keyguard-demo.testnet")).toBe(
       "https://testnet.nearblocks.io/address/keyguard-demo.testnet",
     );
   });
 
-  it("hash tx tidak lolos sebagai path traversal", () => {
-    // Hash tx adalah base58; URL builder tidak meng-encode — pastikan
-    // pemakaian di UI selalu dengan hash dari outcome RPC, bukan input user.
+  it("a tx hash does not pass as path traversal", () => {
+    // A tx hash is base58; the URL builder does not encode — make sure
+    // the UI always uses a hash from an RPC outcome, never user input.
     const url = explorerTxUrl("abc123");
     expect(url).toBe("https://testnet.nearblocks.io/txns/abc123");
   });
