@@ -2,26 +2,26 @@
 /**
  * KeyGuard — Agent Sandbox demo (Node, near-api-js).
  *
- * Skrip kecil yang memegang SCOPED KEY dan mencoba:
- *   1. method yang DIIZINKAN policy  → harus BERHASIL (tx hash tercetak)
- *   2. method yang TERLARANG policy  → harus DITOLAK protokol (error mentah tercetak)
+ * A small script that holds a SCOPED KEY and tries:
+ *   1. a method ALLOWED by the policy  → must SUCCEED (tx hash printed)
+ *   2. a method FORBIDDEN by the policy → must be REJECTED by the protocol (raw error printed)
  *
- * Hasil ditampilkan BERDAMPINGAN — momen demo utama KeyGuard.
+ * Results print SIDE BY SIDE — KeyGuard's main demo moment.
  *
- * Sumber key: link share KeyGuard atau argumen eksplisit.
+ * Key source: KeyGuard share link or explicit arguments.
  *   node demo.mjs --link "https://host/#/key-session#<payload>"
  *     [--forbidden withdraw] [--allowed-args '{"n":1}'] [--deposit-near 0]
  *   node demo.mjs --account alice.testnet --secret ed25519:... \
  *     --contract vault.alice.testnet --allowed increment [--forbidden withdraw]
  *
- * Secret sebaiknya TIDAK dilewatkan lewat argumen CLI (--secret terlihat
- * di `ps` dan shell history). Alternatif yang aman:
+ * The secret should NOT be passed via CLI arguments (--secret shows up in
+ * `ps` and shell history). Safe alternatives:
  *   KEYGUARD_SECRET=ed25519:... node demo.mjs --account ... --contract ... --allowed ...
  *   KEYGUARD_LINK="https://host/#/key-session#..." node demo.mjs
- * (env var tidak muncul di daftar proses.)
+ * (env vars do not show up in the process list.)
  *
- * ⚠️ Script ini HANYA menerima SCOPED KEY (function-call). Jangan jalankan
- * dengan full-access key — tidak ada pengecekan, tapi itu bukan demo yang benar.
+ * ⚠️ This script ONLY accepts a SCOPED KEY (function-call). Do not run it
+ * with a full-access key — there is no check, but that is not a real demo.
  */
 
 import { connect, keyStores, KeyPair } from "near-api-js";
@@ -38,7 +38,7 @@ function usage(exit = 1) {
   process.exit(exit);
 }
 
-/** Parse argumen CLI sederhana: --flag value / --flag (boolean). */
+/** Parse simple CLI arguments: --flag value / --flag (boolean). */
 function parseArgs(argv) {
   const out = {};
   for (let i = 0; i < argv.length; i++) {
@@ -69,14 +69,14 @@ function b64urlDecode(s) {
   return Buffer.from(b64, "base64").toString("utf8");
 }
 
-/** Ekstrak SharePayload dari link share KeyGuard (fragment #/key-session#<payload>). */
+/** Extract the SharePayload from a KeyGuard share link (fragment #/key-session#<payload>). */
 function payloadFromLink(link) {
   const marker = "#/key-session#";
   const idx = link.indexOf(marker);
-  if (idx === -1) throw new Error("Link bukan link share KeyGuard (tidak ada #/key-session#).");
+  if (idx === -1) throw new Error("Not a KeyGuard share link (no #/key-session#).");
   const p = JSON.parse(b64urlDecode(link.slice(idx + marker.length)));
   if (typeof p.secret !== "string" || !p.secret.startsWith("ed25519:"))
-    throw new Error("Payload link tidak valid (secret hilang).");
+    throw new Error("Invalid link payload (secret missing).");
   return p;
 }
 
@@ -102,15 +102,15 @@ async function tryCall(account, { contractId, methodName, args, depositYocto }, 
     });
     const hash = outcome?.transaction?.hash ?? "unknown";
     console.log(`${emoji} ${label}: ${methodName} @ ${contractId}`);
-    console.log(`   ✅ BERHASIL (${Date.now() - start} ms)`);
+    console.log(`   ✅ SUCCEEDED (${Date.now() - start} ms)`);
     console.log(`   tx: ${hash}`);
     console.log(`   explorer: ${explorerTxUrl(hash)}`);
     return { ok: true, hash };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.log(`${emoji} ${label}: ${methodName} @ ${contractId}`);
-    console.log(`   ⛔ DITOLAK (${Date.now() - start} ms)`);
-    console.log(`   error protokol (apa adanya):`);
+    console.log(`   ⛔ REJECTED (${Date.now() - start} ms)`);
+    console.log(`   protocol error (verbatim):`);
     for (const line of msg.split("\n")) console.log(`   | ${line}`);
     return { ok: false, error: msg };
   }
@@ -119,15 +119,15 @@ async function tryCall(account, { contractId, methodName, args, depositYocto }, 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
-  // Secret boleh datang dari env var (lebih aman: tidak terlihat di `ps`
-  // / shell history). Argumen CLI tetap didukung untuk kenyamanan, tapi
-  // diberi peringatan eksplisit.
+  // The secret may come from an env var (safer: not visible in `ps`
+  // / shell history). CLI arguments are still supported for convenience,
+  // but with an explicit warning.
   const link = args.link || process.env.KEYGUARD_LINK;
   const cliSecret = args.secret || process.env.KEYGUARD_SECRET;
   if (args.secret) {
     console.error(
-      "⚠️  Peringatan: --secret terlihat di daftar proses (`ps`) dan shell history. " +
-        "Untuk pemakaian serius, gunakan env var KEYGUARD_SECRET.",
+      "⚠️  Warning: --secret is visible in the process list (`ps`) and shell history. " +
+        "For serious use, use the KEYGUARD_SECRET env var.",
     );
   }
 
@@ -149,9 +149,7 @@ async function main() {
 
   const allowedMethod = args.allowed || allowedMethods[0];
   if (!allowedMethod) {
-    console.error(
-      "Tidak ada method diizinkan yang diketahui (payload kosong dan --allowed tidak diisi).",
-    );
+    console.error("No known allowed method (empty payload and --allowed not provided).");
     process.exit(1);
   }
   const forbiddenMethod = args["forbidden"] || "withdraw";
@@ -160,7 +158,7 @@ async function main() {
     try {
       allowedArgs = JSON.parse(args["allowed-args"]);
     } catch {
-      console.error("--allowed-args bukan JSON valid.");
+      console.error("--allowed-args is not valid JSON.");
       process.exit(1);
     }
   }
@@ -173,39 +171,41 @@ async function main() {
   const account = await near.account(accountId);
 
   banner("🛡️  KeyGuard — Agent Sandbox");
-  console.log(`Akun pemilik : ${accountId}`);
+  console.log(`Owner        : ${accountId}`);
   console.log(`Public key   : ${keyPair.getPublicKey().toString()}`);
-  console.log(`Kontrak      : ${contractId}`);
-  console.log(`Method boleh : ${allowedMethods.join(", ") || "(tidak tercatat di link)"}`);
+  console.log(`Contract     : ${contractId}`);
+  console.log(`Methods      : ${allowedMethods.join(", ") || "(not listed in the link)"}`);
   console.log();
 
   const allowed = await tryCall(
     account,
     { contractId, methodName: allowedMethod, args: allowedArgs, depositYocto },
-    "METHOD DIIZINKAN",
+    "ALLOWED METHOD",
     "1️⃣ ",
   );
   console.log();
   const forbidden = await tryCall(
     account,
     { contractId, methodName: forbiddenMethod, args: {}, depositYocto: "0" },
-    "METHOD TERLARANG",
+    "FORBIDDEN METHOD",
     "2️⃣ ",
   );
   console.log();
-  banner("RINGKASAN");
+  banner("SUMMARY");
   console.log(
     allowed.ok
-      ? "✅ Method diizinkan BERHASIL — scoped key berfungsi untuk agent."
-      : "❌ Method diizinkan GAGAL — cek policy / allowance / kontrak.",
+      ? "✅ Allowed method SUCCEEDED — scoped key works for the agent."
+      : "❌ Allowed method FAILED — check policy / allowance / contract.",
   );
   console.log(
     !forbidden.ok
-      ? "✅ Method terlarang DITOLAK protokol — batas key terbukti di level protokol."
-      : "❌ Method terlarang malah BERHASIL — key ini terlalu longgar, REVOKE SEGERA.",
+      ? "✅ Forbidden method REJECTED by the protocol — key limits proven at the protocol level."
+      : "❌ Forbidden method SUCCEEDED instead — this key is too loose, REVOKE IMMEDIATELY.",
   );
   const demoOk = allowed.ok && !forbidden.ok;
-  console.log(demoOk ? "\n🎬 Demo sandbox SUKSES." : "\n⚠️ Demo sandbox TIDAK sesuai ekspektasi.");
+  console.log(
+    demoOk ? "\n🎬 Sandbox demo SUCCEEDED." : "\n⚠️ Sandbox demo did NOT match expectations.",
+  );
   process.exit(demoOk ? 0 : 2);
 }
 
