@@ -1,38 +1,38 @@
 #!/usr/bin/env bash
-# Deploy kontrak demo KeyGuard ke NEAR testnet.
+# Deploy the KeyGuard demo contract to NEAR testnet.
 #
-# Cara pakai:
-#   ACCOUNT_ID=<akun>.testnet ./deploy.sh
+# Usage:
+#   ACCOUNT_ID=<account>.testnet ./deploy.sh
 #
-# Syarat:
-# - near CLI terinstall (https://docs.near.org/tools/near-cli) dan login testnet:
-#     near login   # atau: npx near-cli login
-# - Akun punya saldo testnet (faucet: https://near-faucet.io)
-# - build/contract.wasm sudah dibangun (./build.sh)
+# Requirements:
+# - near CLI installed (https://docs.near.org/tools/near-cli) and logged in to testnet:
+#     near login   # or: npx near-cli login
+# - The account holds testnet balance (faucet: https://near-faucet.io)
+# - build/contract.wasm is already built (./build.sh)
 #
-# Skrip ini me-deploy ke AKUN ITU SENDIRI (bukan sub-akun), lalu init dengan
-# owner = akun tersebut.
+# This script deploys to THE ACCOUNT ITSELF (not a sub-account), then inits it with
+# owner = that account.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-: "${ACCOUNT_ID:?Isi dulu: ACCOUNT_ID=akunanda.testnet ./deploy.sh}"
+: "${ACCOUNT_ID:?Set it first: ACCOUNT_ID=youraccount.testnet ./deploy.sh}"
 WASM="build/contract.wasm"
 
 if [ ! -f "$WASM" ]; then
-  echo "File $WASM tidak ada. Jalankan ./build.sh dulu." >&2
+  echo "File $WASM is missing. Run ./build.sh first." >&2
   exit 1
 fi
 
-echo "Deploy $WASM ke $ACCOUNT_ID ..."
+echo "Deploy $WASM to $ACCOUNT_ID ..."
 near deploy "$ACCOUNT_ID" "$WASM" --networkId testnet
 
-echo "Init kontrak (owner = $ACCOUNT_ID) ..."
+echo "Init contract (owner = $ACCOUNT_ID) ..."
 near call "$ACCOUNT_ID" init "{\"owner\":\"$ACCOUNT_ID\"}" \
   --accountId "$ACCOUNT_ID" --networkId testnet
 
-echo "Verifikasi: get_count ..."
+echo "Verify: get_count ..."
 near view "$ACCOUNT_ID" get_count --networkId testnet
 
 echo
-echo "Selesai. Isi DEMO_CONTRACT_ID=\"$ACCOUNT_ID\" di ../src/config.ts"
-echo "agar UI Builder menawarkan tombol 'Pakai kontrak demo'."
+echo "Done. Set DEMO_CONTRACT_ID=\"$ACCOUNT_ID\" in ../src/config.ts"
+echo "so the Builder UI offers the 'Use demo contract' button."
