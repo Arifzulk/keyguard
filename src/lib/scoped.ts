@@ -1,6 +1,6 @@
 /**
- * Scoped keypair: HANYA disimpan di memory (InMemoryKeyStore).
- * TIDAK PERNAH ditulis ke localStorage / query string / server.
+ * Scoped keypair: stored ONLY in memory (InMemoryKeyStore).
+ * NEVER written to localStorage / query string / server.
  */
 import { KeyPair } from "@near-js/crypto";
 import { InMemoryKeyStore } from "@near-js/keystores";
@@ -10,7 +10,7 @@ import { NETWORK_ID } from "../config";
 import { getProvider } from "./near";
 import type { SharePayload } from "./policy";
 
-/** @near-js/crypto tidak mengekspor tipe ini dari index — definisi lokal. */
+/** @near-js/crypto does not export this type from its index — local definition. */
 type KeyPairString = `ed25519:${string}` | `secp256k1:${string}`;
 
 export interface ScopedSession {
@@ -20,8 +20,8 @@ export interface ScopedSession {
 }
 
 /**
- * Bangun sesi scoped dari payload share link.
- * Key diimpor ke InMemoryKeyStore saja; refresh halaman = key hilang.
+ * Build a scoped session from a share link payload.
+ * The key is imported into the InMemoryKeyStore only; a page refresh = key gone.
  */
 export async function scopedSessionFromPayload(payload: SharePayload): Promise<ScopedSession> {
   const keyPair = KeyPair.fromString(payload.secret as KeyPairString);
@@ -33,7 +33,7 @@ export async function scopedSessionFromPayload(payload: SharePayload): Promise<S
 }
 
 /**
- * Bangun sesi scoped dari input manual (secret key ditempel user).
+ * Build a scoped session from manual input (secret key pasted by the user).
  */
 export async function scopedSessionFromSecret(
   secret: string,
@@ -57,7 +57,7 @@ export async function scopedSessionFromSecret(
   return { account, keyPair, payload };
 }
 
-/** Public key (ed25519:...) dari secret. */
+/** Public key (ed25519:...) for a secret. */
 export function publicKeyOf(secret: string): string {
   return KeyPair.fromString(secret.trim() as KeyPairString)
     .getPublicKey()
