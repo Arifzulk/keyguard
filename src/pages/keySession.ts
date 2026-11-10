@@ -1,6 +1,6 @@
 /**
- * Halaman Key-Session (#/key-session): parse fragment → import key ke
- * keystore in-memory saja. Tidak menyimpan ke localStorage.
+ * Key-Session page (#/key-session): parse the fragment → import the key into
+ * the in-memory keystore only. Nothing is saved to localStorage.
  */
 import { payloadFromLocation, agentConfigJson, type SharePayload } from "../lib/policy";
 import { scopedSessionFromPayload, type ScopedSession } from "../lib/scoped";
@@ -65,11 +65,11 @@ export async function renderKeySession(root: HTMLElement): Promise<void> {
     }),
   );
 
-  // --- Penjelasan plain: apa yang kunci ini BISA / TIDAK BISA lakukan ---
-  // Semua nilai dari payload (methodNames, receiverId) dirender via
-  // textContent, BUKAN innerHTML — payload link adalah data tidak tepercaya
-  // (lihat decodeSharePayload); interpolasi ke innerHTML = XSS yang bisa
-  // membaca secret dari location.hash.
+  // --- Plain explanation: what this key CAN / CANNOT do ---
+  // All values from the payload (methodNames, receiverId) are rendered via
+  // textContent, NOT innerHTML — the link payload is untrusted data
+  // (see decodeSharePayload); interpolating into innerHTML = XSS that could
+  // read the secret from location.hash.
   const canDo = document.createElement("div");
   canDo.className = "cando-grid";
 
@@ -106,7 +106,7 @@ export async function renderKeySession(root: HTMLElement): Promise<void> {
 
   const canNo = document.createElement("div");
   canNo.className = "cando can-no";
-  // Blok statis (tanpa nilai dari payload) — aman via innerHTML.
+  // Static block (no values from the payload) — safe via innerHTML.
   canNo.innerHTML = `
     <div class="policy-title">⛔ This key CANNOT</div>
     <ul>
@@ -118,7 +118,7 @@ export async function renderKeySession(root: HTMLElement): Promise<void> {
   canDo.appendChild(canNo);
   box.appendChild(canDo);
 
-  // --- Tombol per method yang diizinkan → sandbox dengan method terisi ---
+  // --- Buttons per allowed method → sandbox with the method pre-filled ---
   const methodRow = document.createElement("div");
   methodRow.className = "btn-row method-btns";
   for (const method of payload.methodNames) {
