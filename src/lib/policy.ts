@@ -1,20 +1,20 @@
 /**
- * Aturan policy + util share link KeyGuard.
+ * Policy rules + KeyGuard share link utils.
  */
 
 export interface Policy {
   receiverId: string;
   methodNames: string[];
-  allowanceNear: string; // string desimal, mis. "0.25"
+  allowanceNear: string; // decimal string, e.g. "0.25"
 }
 
-/** Preset method kontrak demo KeyGuard (vault/counter). */
+/** Preset methods of the KeyGuard demo contract (vault/counter). */
 export const DEMO_METHODS = ["deposit", "increment", "withdraw", "reset"];
 
-/** Method demo yang dianggap aman untuk dicentang sebagai default policy. */
+/** Demo methods considered safe to pre-check as the default policy. */
 export const DEMO_ALLOWED_DEFAULTS = ["deposit", "increment"];
 
-/** Preset allowance dalam NEAR. */
+/** Preset allowance in NEAR. */
 export const ALLOWANCE_PRESETS = ["0.1", "0.25", "1"];
 
 const ACCOUNT_ID_RE = /^(([a-z\d]+[\-_])*[a-z\d]+\.)*([a-z\d]+[\-_])*[a-z\d]+$/;
@@ -36,7 +36,7 @@ export function isPositiveNumber(v: string): boolean {
 }
 
 /**
- * Ringkasan policy dalam bahasa sederhana.
+ * Plain-language policy summary.
  */
 export function policySummary(p: Policy): string {
   const methods = p.methodNames.join(", ");
@@ -48,10 +48,10 @@ export function policySummary(p: Policy): string {
   );
 }
 
-/** Payload share link: secret HANYA di URL fragment, tidak pernah di query string. */
+/** Share link payload: secret ONLY in the URL fragment, never in the query string. */
 export interface SharePayload {
-  secret: string; // "ed25519:..." — keypair scoped
-  accountId: string; // pemilik akun
+  secret: string; // "ed25519:..." — scoped keypair
+  accountId: string; // account owner
   receiverId: string;
   methodNames: string[];
 }
@@ -74,16 +74,16 @@ export function encodeSharePayload(p: SharePayload): string {
 }
 
 /**
- * Validasi ketat untuk payload dari link share (data tidak tepercaya:
- * siapa pun bisa membuat link). Aturan:
- * - secret harus ed25519 + base58; panjang 43–45 karakter (32-byte seed)
- *   atau 86–88 karakter (64-byte secret key dari @near-js/crypto, bentuk
- *   yang dihasilkan KeyPair.fromRandom);
- * - accountId / receiverId harus format account ID NEAR yang valid;
- * - methodNames TIDAK BOLEH kosong (di protokol NEAR, list kosong = SEMUA
- *   method diizinkan) dan setiap entry harus nama method yang valid.
- * Ini adalah garis pertahanan pertama melawan link share hasil rekayasa —
- * payload lolos validasi di sini baru boleh dirender / dipakai.
+ * Strict validation for share-link payloads (untrusted data: anyone can
+ * craft a link). Rules:
+ * - secret must be ed25519 + base58; 43–45 chars (32-byte seed)
+ *   or 86–88 chars (64-byte secret key from @near-js/crypto, the form
+ *   produced by KeyPair.fromRandom);
+ * - accountId / receiverId must be valid NEAR account ID format;
+ * - methodNames must NOT be empty (in the NEAR protocol, an empty list =
+ *   ALL methods allowed) and every entry must be a valid method name.
+ * This is the first line of defense against crafted share links —
+ * only payloads that pass validation here may be rendered / used.
  */
 const ED25519_SECRET_RE =
   /^ed25519:[1-9A-HJ-NP-Za-km-z]{43,45}$|^ed25519:[1-9A-HJ-NP-Za-km-z]{86,88}$/;
@@ -105,19 +105,19 @@ export function decodeSharePayload(s: string): SharePayload {
   ) {
     throw new Error("Invalid share payload format.");
   }
-  // Normalisasi: buang duplikat, pertahankan urutan.
+  // Normalize: drop duplicates, keep order.
   return { ...p, methodNames: [...new Set(p.methodNames)] };
 }
 
-/** Bangun link share: origin + #/key-session#<payload>. */
+/** Build the share link: origin + #/key-session#<payload>. */
 export function buildShareLink(payload: SharePayload): string {
   return `${window.location.origin}${window.location.pathname}#/key-session#${encodeSharePayload(payload)}`;
 }
 
 /**
- * Config JSON siap-tempel untuk AI agent yang memakai `near-api-js`.
- * Berisi secret scoped key — hanya dibagikan ke agent yang dipercaya,
- * sama seperti link share.
+ * Paste-ready agent config JSON for an AI agent using `near-api-js`.
+ * Contains the scoped key secret — share it only with a trusted agent,
+ * just like the share link.
  */
 export interface AgentConfig {
   networkId: string;
@@ -145,7 +145,7 @@ export function agentConfigJson(payload: SharePayload): string {
   return JSON.stringify(buildAgentConfig(payload), null, 2);
 }
 
-/** Contoh kode agent (near-api-js) yang memegang scoped key. */
+/** Agent code sample (near-api-js) holding the scoped key. */
 export function agentUsageExample(payload: SharePayload): string {
   return `// npm install near-api-js
 import { connect, keyStores, KeyPair } from "near-api-js";
@@ -177,8 +177,8 @@ await account.functionCall({
 }
 
 /**
- * Ambil payload dari location.hash dengan format: #/key-session#<payload>
- * Mengembalikan null bila tidak ada payload.
+ * Read the payload from location.hash, format: #/key-session#<payload>
+ * Returns null when there is no payload.
  */
 export function payloadFromLocation(): SharePayload | null {
   const hash = window.location.hash;
